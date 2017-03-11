@@ -775,7 +775,7 @@ ThreadSend:MainThread;
 begin
  if not Assigned(ThreadSend) then
  begin
-   ThreadSend.Create;
+   ThreadSend := MainThread.Create(true);
    ThreadSend.txt := txt;
    ThreadSend.SL := TStringList.Create;
    ListFileDir(ExtractFilePath(Application.ExeName)+ txt,ThreadSend.SL);

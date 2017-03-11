@@ -15,6 +15,7 @@ type
    procedure UpdateUI;
   var txt:string;
   SL:TStringList;
+  warnings:string;
   end;
 
 implementation
@@ -59,13 +60,14 @@ MS:TMemoryStream;
 ClientPanel:TIdTCPClient;
 //SL:TStringList;
 begin
-  ClientPanel.Create(nil);
+  warnings := '';
+  ClientPanel := TIdTCPClient.Create(nil);
   ClientPanel.Host := '192.168.0.25';
   ClientPanel.Port := 5005;
   ClientPanel.IPVersion := Id_IPv4;
-  SL := TStringList.Create;
+//  SL := TStringList.Create;
   MS := TMemoryStream.Create;
-  ClientPanel.ReadTimeout := 200;
+  ClientPanel.ReadTimeout := 250;
 //  ListFileDir(ExtractFilePath(Application.ExeName)+ txt,SL);
 //  memoPanel.Lines.add(ExtractFilePath(Application.ExeName)+ txt);
   if SL.Count >0 then
@@ -78,7 +80,7 @@ begin
          MS.LoadFromFile(txt +'\'+SL[i]);
          ClientPanel.Socket.Write(MS);
   //        FrmDebug.MemSend.Lines.Add('(' + txt +') ' + SL[i]);
-         Sleep(200);
+         Sleep(250);
         end;
 
 
@@ -87,11 +89,12 @@ begin
      except
        ClientPanel.Socket.Close;
        ClientPanel.Disconnect;
+       warnings:= 'not connection';
      end;
     end
-    else ;//ShowMessage('нет файлов в папке');
+    else warnings := 'нет файлов в папке';
 
-   SL.Free;
+
    MS.Free;
    ClientPanel.Free;
  Synchronize(UpdateUI);
@@ -101,8 +104,10 @@ procedure MainThread.UpdateUI;
 begin
  MainForm.memoPanel.Clear;
  MainForm.memoPanel.Lines.Text := txt;
+ if warnings <> '' then MainForm.memoPanel.Lines.add(warnings);
 
  MainForm.memoPanel.Lines.add('Send complected. Count file send : ' + IntToStr(SL.Count));
+ SL.Free;
 end;
 
 end.
