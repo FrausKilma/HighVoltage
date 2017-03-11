@@ -1,0 +1,117 @@
+unit UArdEmul;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
+  Vcl.Samples.Spin, IdCustomTCPServer, IdTCPServer, IdBaseComponent,
+  IdComponent, IdTCPConnection, IdTCPClient, IdContext;
+
+type
+  TFrmEmul = class(TForm)
+    ArduinoClient: TIdTCPClient;
+    ArduinoServer: TIdTCPServer;
+    Label1: TLabel;
+    Label2: TLabel;
+    SEArdPort: TSpinEdit;
+    SEServerPort: TSpinEdit;
+    Label3: TLabel;
+    Button1: TButton;
+    StatusBar1: TStatusBar;
+    MResiveServer: TMemo;
+    Label4: TLabel;
+    Edit1: TEdit;
+    MSendFromArduino: TMemo;
+    Label5: TLabel;
+    Button2: TButton;
+    Button3: TButton;
+    procedure FormShow(Sender: TObject);
+    procedure SEArdPortChange(Sender: TObject);
+    procedure Edit1Change(Sender: TObject);
+    procedure SEServerPortChange(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure ArduinoServerExecute(AContext: TIdContext);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure Button3Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FrmEmul: TFrmEmul;
+
+implementation
+
+{$R *.dfm}
+
+procedure TFrmEmul.ArduinoServerExecute(AContext: TIdContext);
+begin
+if FrmEmul.Showing then
+ begin
+  MResiveServer.Lines.Text := AContext.Connection.Socket.ReadLn;
+  StatusBar1.Panels[1].Text := 'приём успешен';
+ end;
+end;
+
+procedure TFrmEmul.Button1Click(Sender: TObject);
+begin
+ try
+  ArduinoClient.Connect;
+  ArduinoClient.Socket.WriteLn(MSendFromArduino.Lines.Text);
+  ArduinoClient.Disconnect;
+  StatusBar1.Panels[1].Text := 'отправка успешна';
+ except
+   showmessage('Не настроена сеть с ардуино, обратитесь к автору программы');
+ end;
+end;
+
+procedure TFrmEmul.Button2Click(Sender: TObject);
+begin
+MResiveServer.Clear;
+MSendFromArduino.Clear;
+end;
+
+procedure TFrmEmul.Button3Click(Sender: TObject);
+begin
+ try
+  ArduinoClient.Connect;
+  ArduinoClient.Socket.WriteLn(MSendFromArduino.Lines.Text);
+  ArduinoClient.Disconnect;
+  StatusBar1.Panels[1].Text := 'отправка успешна';
+ except
+   showmessage('Не настроена сеть с ардуино, обратитесь к автору программы');
+ end;
+end;
+
+procedure TFrmEmul.Edit1Change(Sender: TObject);
+begin
+ArduinoClient.Host := edit1.Text;
+end;
+
+procedure TFrmEmul.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ Hide;
+end;
+
+procedure TFrmEmul.FormShow(Sender: TObject);
+begin
+ArduinoServer.DefaultPort := SEServerPort.Value;
+ArduinoClient.Host := Edit1.Text;
+ArduinoClient.Port := SEArdPort.Value;
+end;
+
+procedure TFrmEmul.SEArdPortChange(Sender: TObject);
+begin
+ ArduinoClient.Port := SEArdPort.Value;
+end;
+
+procedure TFrmEmul.SEServerPortChange(Sender: TObject);
+begin
+ArduinoServer.DefaultPort := SEServerPort.Value;
+end;
+
+end.
